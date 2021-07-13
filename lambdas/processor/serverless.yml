@@ -1,0 +1,33 @@
+org: tofagerl
+app: kirc-processor
+service: kirc-processor
+
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  region: "eu-central-1"
+  runtime: nodejs14.x
+  lambdaHashingVersion: '20201221'
+  stage: dev
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - sqs:ReadMessage
+          Resource: arn:aws:sqs:eu-central-1:030483651510:message_queue.fifo
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:Query
+            - dynamodb:UpdateItem
+            - dynamodb:BatchWriteItem
+          Resource: arn:aws:dynamodb:eu-central-1:030483651510:table/kirc
+functions:
+  processor:
+    handler: processor.processor
+    events:
+      - sqs:
+          batchSize: 1
+          arn: arn:aws:sqs:eu-central-1:030483651510:message_queue.fifo
